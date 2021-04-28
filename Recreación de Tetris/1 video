@@ -1,0 +1,125 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEditor;
+using System;
+
+public class Constructor : EditorWindow
+{
+    public enum TipoPiezas {i, j, l, c, s, t, z}
+    TipoPiezas miTipo = TipoPiezas.i;
+    static public GameObject pieza;
+    public int[,] CodigoPiezas = new int[4, 3];
+    Vector3 posBase = new Vector3(0, 0, 0);
+    public static float ancho, alto;
+    [MenuItem("Window/Constructor")]
+
+    static void AbreVentana()
+    {
+        Constructor ventana = (Constructor)EditorWindow.GetWindow(typeof(Constructor));
+    }
+
+    private void OnGUI()
+    {
+        EditorGUILayout.BeginHorizontal();
+        pieza = EditorGUILayout.ObjectField("Prefab", pieza, typeof(GameObject), true) as GameObject;
+        EditorGUILayout.EndHorizontal();
+
+        //elegir pieza a construir
+        miTipo = (TipoPiezas)EditorGUILayout.EnumPopup("Tipo de pieza:", miTipo);
+
+        //Boton Construir
+        if (GUILayout.Button("Crear pieza"))
+        {
+            Construye(miTipo);
+        }
+    }
+
+    private void Construye(TipoPiezas miTipo)
+    {
+        ancho = pieza.GetComponent<SpriteRenderer>().bounds.size.x;
+        alto = pieza.GetComponent<SpriteRenderer>().bounds.size.y;
+
+        switch (miTipo)
+        {
+            case TipoPiezas.i:
+                CodigoPiezas = new int[,]
+                {
+                {1,0,0},
+                {1,0,0},
+                {1,0,0},
+                {1,0,0}
+                };
+                break;
+            case TipoPiezas.j:
+                CodigoPiezas = new int[,]
+                {
+                {0,0,0},
+                {0,1,0},
+                {0,1,0},
+                {1,1,0}
+                };
+                break;
+            case TipoPiezas.l:
+                CodigoPiezas = new int[,]
+                {
+                {0,0,0},
+                {1,0,0},
+                {1,0,0},
+                {1,1,0}
+                };
+                break;
+            case TipoPiezas.c:
+                CodigoPiezas = new int[,]
+                {
+                {0,0,0},
+                {0,0,0},
+                {1,1,0},
+                {1,1,0}
+                };
+                break;
+            case TipoPiezas.s:
+                CodigoPiezas = new int[,]
+                {
+                {0,0,0},
+                {0,0,0},
+                {0,1,1},
+                {1,1,0}
+                };
+                break;
+            case TipoPiezas.t:
+                CodigoPiezas = new int[,]
+                {
+                {0,0,0},
+                {0,0,0},
+                {1,1,1},
+                {0,1,0}
+                };
+                break;
+            case TipoPiezas.z:
+                CodigoPiezas = new int[,]
+                {
+                {0,0,0},
+                {0,0,0},
+                {1,1,0},
+                {0,1,1}
+                };
+                break;
+        }
+
+        //Crear Pieza
+        GameObject contenedor = new GameObject();
+        for (int filas = 0; filas < CodigoPiezas.GetLength(0); filas++ )
+        {
+            for(int columna = 0; columna < CodigoPiezas.GetLength(1); columna++)
+            {
+                if(CodigoPiezas[filas, columna] == 1)
+                {
+                    Vector3 posCambiar = new Vector3(posBase.x + ancho*columna, posBase.y - alto*filas);
+                    GameObject clonPieza = Instantiate(pieza, posCambiar, Quaternion.identity) as GameObject;
+                    clonPieza.transform.parent = contenedor.transform;
+                }
+            }
+        }
+    }
+}//class
