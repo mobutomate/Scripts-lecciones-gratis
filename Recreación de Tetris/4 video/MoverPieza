@@ -1,0 +1,120 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class MoverPieza : MonoBehaviour
+{
+    public Vector3 centroRotacion;
+
+    //contador
+    float t;
+    float tiempoMovimiento = 0.5f;
+    public static int anchura = 10;
+    public static int altura = 22;
+
+
+    void Start()
+    {
+        
+    }
+
+    void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            Mueve(1, 0);
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            Mueve(-1, 0);
+        } else if(Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            if(ValidaRotacion(new Vector3(0,0,90)))
+            {
+                transform.RotateAround(transform.TransformPoint(centroRotacion), new Vector3(0, 0, 1), 90);
+            }
+        }
+
+        
+
+        t += Time.deltaTime;
+        if(t > tiempoMovimiento)
+        {
+            
+            if(ValidaSiguienteMovimiento(0,-1))
+            {
+                transform.position += new Vector3(0, -1);
+            } else
+            {
+                GameManager.instancia.CrearPieza();
+                this.enabled = false;
+            }
+            t = 0;
+        }
+        
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.white;
+        Gizmos.DrawWireSphere(transform.TransformPoint(centroRotacion), 0.2f);
+    }
+
+    void Mueve(int x, int y)
+    {
+        //Antes de mover lo validamos
+        if(ValidaSiguienteMovimiento(x,y))
+        {
+            transform.position += new Vector3(x, y);
+        }
+        
+    }
+
+    bool ValidaSiguienteMovimiento(int x, int y)
+    {
+        //Verificar la posicion de cada pieza
+        foreach(Transform t in transform)
+        {
+            int X = Mathf.RoundToInt(t.position.x);
+            int Y= Mathf.RoundToInt(t.position.y);
+            X += x;
+            Y += y;
+
+            if(X <0|| X>= anchura || Y< 1 || Y >= altura)
+            {
+                return false;
+            }
+
+        }
+        //ninguna ficha se pasa del limite
+        return true;
+    }
+
+    bool ValidaRotacion(Vector3 angulo)
+    {
+        Vector3 centroRelativo = transform.TransformPoint(centroRotacion);
+        //Verificar la posicion de cada pieza
+        foreach (Transform t in transform)
+        {
+            Vector3 nuevaPos = RotaALrededorPivot(t.position, centroRelativo, angulo);
+            int X = Mathf.RoundToInt(nuevaPos.x);
+            int Y = Mathf.RoundToInt(nuevaPos.y);
+            
+
+            if (X < 0 || X >= anchura || Y < 1 || Y >= altura)
+            {
+                return false;
+            }
+
+        }
+        //ninguna ficha se pasa del limite
+        return true;
+    }
+
+
+    Vector3 RotaALrededorPivot(Vector3 punto, Vector3 pivote, Vector3 angulo)
+    {
+        return Quaternion.Euler(angulo) * (punto - pivote) + pivote;
+    }
+
+}//class
